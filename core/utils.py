@@ -1,0 +1,148 @@
+"""
+NetReaper - Utility functions
+Author: 09azo14 | License: MIT
+"""
+
+import subprocess
+import shlex
+from pathlib import Path
+from rich.console import Console
+
+from core.platform import (
+    get_local_interfaces,
+    get_default_gateway,
+    get_local_ip,
+    os_label,
+    is_admin,
+)
+
+console = Console()
+
+_LEARNING_MODE = False
+
+
+def set_learning_mode(enabled: bool):
+    """Toggle global learning mode."""
+    global _LEARNING_MODE
+    _LEARNING_MODE = enabled
+
+
+def get_learning_mode() -> bool:
+    return _LEARNING_MODE
+
+
+def sanitize_for_shell(value: str) -> str:
+    """Basic shell escape for user input used in commands."""
+    return shlex.quote(value)
+
+
+def run_command(cmd: str, logger=None, module: str = "", target: str = "",
+                timeout: int = 300) -> str:
+    """
+    Run a shell command with real-time output streaming.
+    Returns the full output as a string.
+    """
+    if get_learning_mode():
+        from core.explanations import explain_command
+        explain_command(cmd, console)
+        import questionary
+        if not questionary.confirm("Do you want to execute this command?").ask():
+            console.print("[yellow] Command cancelled by user.[/]")
+            return ""
+
+    console.print(f"\n[bold yellow] Running:[/] [dim]{cmd}[/]\n")
+    output_lines = []
+
+    try:
+        proc = subprocess.Popen(
+            cmd, shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True, bufsize=1,
+        )
+
+        try:
+            for line in iter(proc.stdout.readline, ""):
+                line = line.rstrip()
+                output_lines.append(line)
+                # Color-code output
+                if any(w in line.lower() for w in ["error", "failed", "denied"]):
+                    console.print(f"[red]{line}[/]")
+                elif any(w in line.lower() for w in ["open", "found", "success", "ok"]):
+                    console.print(f"[green]{line}[/]")
+                elif any(w in line.lower() for w in ["warning", "warn"]):
+                    console.print(f"[yellow]{line}[/]")
+                else:
+                    console.print(line)
+
+            proc.wait(timeout=timeout)
+
+        except KeyboardInterrupt:
+            proc.terminate()
+            console.print("\n[yellow] Command cancelled by user.[/]")
+
+    except Exception as e:
+        console.print(f"[red] Error executing command: {e}[/]")
+
+    full_output = "\n".join(output_lines)
+
+    if logger:
+        logger.log_command(module, cmd, full_output, target)
+
+    return full_output
+
+
+def build_command(base_cmd: str, **kwargs) -> str:
+    """Build a shell command with quoted user inputs."""
+    quoted = {k: sanitize_for_shell(v) for k, v in kwargs.items()}
+    return base_cmd.format(**quoted)
+
+
+def select_interface() -> str:
+    """Prompt user to select a network interface."""
+    import questionary
+    interfaces = get_local_interfaces()
+    if not interfaces:
+        console.print("[red] No interface found.[/]")
+        return ""
+    return questionary.select(
+        "Select network interface:",
+        choices=interfaces
+    ).ask()
+
+
+def select_wordlist() -> str:
+    """Prompt user to select or enter a wordlist path."""
+    import questionary
+    base_dir = Path(__file__).parent.parent / "wordlists"
+    built_in = [str(f) for f in base_dir.glob("*.txt")] if base_dir.exists() else []
+
+    choices = built_in + ["Enter custom path"]
+    selected = questionary.select("Select wordlist:", choices=choices).ask()
+
+    if selected == "Enter custom path":
+        return questionary.text("Wordlist path:").ask()
+    return selected
+
+
+def confirm_action(action: str) -> bool:
+    """Confirm destructive or important actions."""
+    import questionary
+    return questionary.confirm(f"Are you sure you want to {action}?").ask()
+
+
+def show_dashboard():
+    """Show local network dashboard. OS-aware."""
+    console.print("\n[bold cyan]== Session Dashboard ==[/]")
+    try:
+        ip = get_local_ip()
+        gw = get_default_gateway()
+        interfaces = get_local_interfaces()
+        console.print(f"[white]Operating System:[/] {os_label()}")
+        console.print(f"[white]Local IP:[/] {ip}")
+        console.print(f"[white]Gateway:[/] {gw}")
+        console.print(f"[white]Interfaces:[/] {', '.join(interfaces) if interfaces else 'N/A'}")
+        if not is_admin():
+            console.print("[yellow] No administrative privileges - some modules may fail.[/]")
+    except Exception as e:
+        console.print(f"[yellow] Could not obtain dashboard: {e}[/]")
