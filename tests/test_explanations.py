@@ -6,11 +6,11 @@ Author: 09azo14 | License: MIT
 import unittest
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.explanations import explain_command, EXPLANATIONS_KEYWORDS
-from unittest.mock import MagicMock
+from core.explanations import explain_command  # noqa: E402
 
 
 class TestExplanations(unittest.TestCase):

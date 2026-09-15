@@ -9,7 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from modules.cve import parse_nmap_services, search_cve
+from modules.cve import parse_nmap_services, search_cve  # noqa: E402
 
 
 class TestCVE(unittest.TestCase):

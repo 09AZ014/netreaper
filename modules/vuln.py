@@ -29,7 +29,9 @@ def run(scan_type: str, target: str, logger) -> None:
 
     safe_target = sanitize_for_shell(target)
     if scan_type == "searchsploit":
-        query = sanitize_for_shell(Prompt.ask("[cyan]Service/version to search[/]", default="apache 2.4"))
+        query = sanitize_for_shell(
+            Prompt.ask("[cyan]Service/version to search[/]", default="apache 2.4")
+        )
         cmd = f"searchsploit {query}"
     elif scan_type == "lynis":
         cmd = VULN_SCANS[scan_type]

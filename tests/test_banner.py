@@ -5,7 +5,7 @@ Author: 09azo14 | License: MIT
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import sys
 from pathlib import Path
 

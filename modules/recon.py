@@ -33,7 +33,8 @@ def run(scan_type: str, target: str, logger, profile=None) -> None:
 
     safe_target = sanitize_for_shell(target)
     if scan_type == "custom":
-        cmd = Prompt.ask("[cyan]Custom nmap command[/]", default="nmap -sV {target}").format(target=safe_target)
+        template = Prompt.ask("[cyan]Custom nmap command[/]", default="nmap -sV {target}")
+        cmd = template.format(target=safe_target)
     elif scan_type in ("arp_scan",):
         cmd = SCAN_OPTIONS[scan_type]
     else:

@@ -31,15 +31,24 @@ def run(action: str, logger) -> None:
         cmd = f"sudo airodump-ng {safe_iface}mon"
     elif action == "capture_hs":
         channel = sanitize_for_shell(Prompt.ask("[cyan]Channel[/]", default="6"))
-        bssid = sanitize_for_shell(Prompt.ask("[cyan]BSSID[/]", default="00:11:22:33:44:55"))
-        output = sanitize_for_shell(Prompt.ask("[cyan]File prefix[/]", default="/tmp/netreaper_handshake"))
+        bssid = sanitize_for_shell(
+            Prompt.ask("[cyan]BSSID[/]", default="00:11:22:33:44:55")
+        )
+        output = sanitize_for_shell(
+            Prompt.ask("[cyan]File prefix[/]", default="/tmp/netreaper_handshake")
+        )
         cmd = f"sudo airodump-ng -c {channel} --bssid {bssid} -w {output} {safe_iface}mon"
     elif action == "deauth":
-        bssid = sanitize_for_shell(Prompt.ask("[cyan]BSSID[/]", default="00:11:22:33:44:55"))
+        bssid = sanitize_for_shell(
+            Prompt.ask("[cyan]BSSID[/]", default="00:11:22:33:44:55")
+        )
         cmd = f"sudo aireplay-ng --deauth 5 -a {bssid} {safe_iface}mon"
     elif action == "crack_wpa":
         capture = sanitize_for_shell(Prompt.ask("[cyan].cap file[/]"))
-        default_wordlist = "/usr/share/wordlists/rockyou.txt" if os.name != "nt" else "C:\\wordlists\\rockyou.txt"
+        default_wordlist = (
+            "/usr/share/wordlists/rockyou.txt" if os.name != "nt"
+            else "C:\\wordlists\\rockyou.txt"
+        )
         wordlist = sanitize_for_shell(Prompt.ask("[cyan]Wordlist[/]", default=default_wordlist))
         cmd = f"aircrack-ng {capture} -w {wordlist}"
     elif action == "wifite":

@@ -1,0 +1,36 @@
+# NetReaper Docker Compose
+# Author: 09azo14 | License: MIT
+#
+# Usage:
+#   docker-compose up -d netreaper
+#   docker-compose exec netreaper bash
+#   docker attach netreaper
+
+services:
+  netreaper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        UID: 1000
+        GID: 1000
+        USERNAME: netreaper
+    image: netreaper:latest
+    container_name: netreaper
+    stdin_open: true
+    tty: true
+    # Required for nmap -sS, tcpdump, and other raw socket tools
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+      - NET_BIND_SERVICE
+    # Uncomment for Wi-Fi / wireless modules (privileged + host network)
+    # privileged: true
+    # network_mode: host
+    volumes:
+      - ./reports:/app/reports
+      - ./wordlists:/app/wordlists
+      - ./data:/app/data
+      - ./logs:/app/logs
+    # For interactive mode, run: docker-compose run --rm netreaper
+    # Default command shows help and exits; override as needed.

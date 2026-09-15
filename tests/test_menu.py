@@ -12,6 +12,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import core.menu  # noqa: E402,F401  (imported so the fixtures below can patch its attributes)
+
 
 PATCH_TARGETS = [
     "core.menu.SessionLogger",

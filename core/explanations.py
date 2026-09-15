@@ -8,8 +8,8 @@ EXPLANATIONS_KEYWORDS = {
     "nmap -sn": "Sends ICMP/ARP pings to discover active hosts without port scanning.",
     "nmap -F -T4 --open": "Fast scan of the 100 most common ports, showing only open ones.",
     "nmap -sS -p-": "SYN scan of all TCP ports (1-65535) to map services.",
-    "nmap -A -T4 -sV --osscan-guess": "OS detection, service version detection, and OS/active fingerprinting.",
-    "nmap -sS -T2 -f --data-length": "Stealth scan: fragmented packets and decoys to confuse IDS/IPS.",
+    "nmap -A -T4 -sV --osscan-guess": "OS detection and service version detection.",
+    "nmap -sS -T2 -f --data-length": "Stealth scan: fragmented packets and decoys.",
     "nmap -sC -sV": "Runs default NSE scripts and detects service versions.",
     "nmap -sU --top-ports": "UDP scan of the 200 most common ports (slower than TCP).",
     "nmap --script vuln": "Runs NSE vulnerability detection scripts.",
@@ -55,4 +55,8 @@ def explain_command(cmd: str, console) -> None:
     if explanation:
         console.print(f"\n[bold cyan] Learning:[/] {explanation}\n")
     else:
-        console.print("\n[bold cyan] Learning:[/] This command will run the indicated tool. Analyze the output to identify ports, services, and potential vulnerabilities.\n")
+        message = (
+            "[bold cyan] Learning:[/] This command will run the indicated tool. "
+            "Analyze the output to identify ports, services, and potential vulnerabilities."
+        )
+        console.print(f"\n{message}\n")

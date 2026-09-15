@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import core.profile as profile_module
+import core.profile as profile_module  # noqa: E402
 
 
 class TestTargetProfile(unittest.TestCase):

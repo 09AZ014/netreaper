@@ -1,0 +1,39 @@
+# NetReaper .dockerignore
+# Author: 09azo14 | License: MIT
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Reports and logs generated locally
+reports/*
+logs/*
+data/*
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation and misc
+README.md
+*.md

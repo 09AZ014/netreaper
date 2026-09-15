@@ -14,6 +14,7 @@ from core.installer import show_tools_status
 from core.logger import SessionLogger
 from core.utils import show_dashboard, set_learning_mode, get_learning_mode
 from core.profile import TargetProfile
+from core.config import get_config
 from core.platform import supported_modules, os_label
 from modules import cve as cve_mod
 
@@ -42,13 +43,16 @@ def _build_main_choices():
         questionary.Choice("Attacks & Exploits",               value="exploit"),
         questionary.Choice("Password Cracking",                value="crack"),
         questionary.Choice("Traffic Analysis",                 value="traffic"),
-        questionary.Choice("Wireless & Wi-Fi",                 value="wireless", disabled=not support["wireless"]),
+        questionary.Choice("Wireless & Wi-Fi",                 value="wireless",
+                           disabled=not support["wireless"]),
         questionary.Choice("Web Application Testing",          value="web"),
-        questionary.Choice("Defense & Monitoring",             value="defense", disabled=not support["defense"]),
+        questionary.Choice("Defense & Monitoring",             value="defense",
+                           disabled=not support["defense"]),
         questionary.Choice("Target Profile",                   value="profile"),
         questionary.Choice("CVE Lookup",                       value="cve"),
         questionary.Choice("View Reports",                     value="reports"),
         questionary.Choice("Scan Diff",                        value="diff"),
+        questionary.Choice("Watch Mode",                       value="watch"),
         questionary.Choice("Learning Mode",                    value="learn"),
         questionary.Choice("Tools & Installation",             value="tools"),
         questionary.Separator(),
@@ -67,9 +71,10 @@ class MainMenu:
 
     def _set_target(self) -> str:
         """Prompt user for target IP/range."""
+        default_target = self.target or get_config().get("target") or "192.168.1.1"
         t = Prompt.ask(
             "\n[bold cyan] Target (IP / range e.g. 192.168.1.0/24)[/]",
-            default=self.target or "192.168.1.1"
+            default=default_target
         )
         self.target = t
         return t
@@ -126,6 +131,8 @@ class MainMenu:
                 self._menu_reports()
             elif choice == "diff":
                 diff.run(self.logger)
+            elif choice == "watch":
+                self._menu_watch()
             elif choice == "profile":
                 self._menu_profile()
             elif choice == "learn":
@@ -152,8 +159,9 @@ class MainMenu:
             questionary.Separator(),
             questionary.Choice("<- Back",                              value="back"),
         ]
-        choice = questionary.select("Recon:", choices=choices,
-                                  style=NETREAPER_STYLE).ask()
+        choice = questionary.select(
+            "Recon:", choices=choices, style=NETREAPER_STYLE
+        ).ask()
         if choice and choice != "back":
             if choice == "arp_scan":
                 recon.run(choice, "", self.logger)
@@ -175,8 +183,9 @@ class MainMenu:
             questionary.Separator(),
             questionary.Choice("<- Back",                                     value="back"),
         ]
-        choice = questionary.select("Vulnerabilities:", choices=choices,
-                                  style=NETREAPER_STYLE).ask()
+        choice = questionary.select(
+            "Vulnerabilities:", choices=choices, style=NETREAPER_STYLE
+        ).ask()
         if choice and choice != "back":
             target = self._set_target()
             vuln.run(choice, target, self.logger)
@@ -190,8 +199,9 @@ class MainMenu:
             questionary.Separator(),
             questionary.Choice("<- Back",                                      value="back"),
         ]
-        choice = questionary.select("Exploits:", choices=choices,
-                                  style=NETREAPER_STYLE).ask()
+        choice = questionary.select(
+            "Exploits:", choices=choices, style=NETREAPER_STYLE
+        ).ask()
         if choice and choice != "back":
             target = self._set_target()
             from modules import exploit
@@ -336,6 +346,47 @@ class MainMenu:
         if choice and choice != "back":
             target = self._set_target()
             cve_mod.run(choice, target, self.logger)
+
+    def _menu_watch(self) -> None:
+        from core import watch
+
+        self._section_header("Watch Mode")
+        command_choices = [
+            questionary.Choice("Recon (nmap, arp-scan, masscan)", value="recon"),
+            questionary.Choice("Nmap scan profiles",              value="nmap"),
+            questionary.Choice("Web application testing",          value="web"),
+            questionary.Choice("Vulnerability scanning",          value="vuln"),
+            questionary.Separator(),
+            questionary.Choice("<- Back",                          value="back"),
+        ]
+        command = questionary.select(
+            "Watch which module:", choices=command_choices, style=NETREAPER_STYLE
+        ).ask()
+        if not command or command == "back":
+            return
+
+        actions = watch.available_actions(command)
+        action = questionary.select(
+            "Action:", choices=actions + ["<- Back"], style=NETREAPER_STYLE
+        ).ask()
+        if not action or action == "<- Back":
+            return
+
+        target = self._set_target()
+        raw_interval = Prompt.ask(
+            "[cyan]Interval between runs in seconds[/]",
+            default=str(watch.resolve_interval())
+        )
+        try:
+            interval = int(raw_interval)
+        except (TypeError, ValueError):
+            interval = watch.resolve_interval()
+
+        console.print("[dim]Press Ctrl+C to stop watching.[/]")
+        watch.run(
+            command, action, target, self.logger,
+            interval=interval, profile=self.profile
+        )
 
     def _toggle_learning_mode(self) -> None:
         current = get_learning_mode()

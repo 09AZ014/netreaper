@@ -39,8 +39,7 @@ def mock_run_command():
 class TestCrackHashModes:
     """Tests for hash cracking modes (john, hashcat, hashid)."""
 
-    def test_john_mode_calls_run_command(self, mock_prompt, mock_wordlist,
-                                          mock_run_command):
+    def test_john_mode_calls_run_command(self, mock_prompt, mock_wordlist, mock_run_command):
         """'john' mode should build and execute a john command."""
         mock_logger = MagicMock()
         from modules.crack import run
@@ -50,8 +49,7 @@ class TestCrackHashModes:
         assert "john" in cmd
         assert "--wordlist=" in cmd
 
-    def test_hashcat_mode_calls_run_command(self, mock_prompt, mock_wordlist,
-                                             mock_run_command):
+    def test_hashcat_mode_calls_run_command(self, mock_prompt, mock_wordlist, mock_run_command):
         """'hashcat' mode should build and execute a hashcat command."""
         mock_logger = MagicMock()
         from modules.crack import run
@@ -67,8 +65,7 @@ class TestCrackHashModes:
         run("hashid", mock_logger)
         assert mock_run_command.called
 
-    def test_unknown_mode_does_not_crash(self, mock_prompt, mock_wordlist,
-                                          mock_run_command):
+    def test_unknown_mode_does_not_crash(self, mock_prompt, mock_wordlist, mock_run_command):
         """Unknown mode falls to brute_services which uses prompt but shouldn't crash."""
         mock_logger = MagicMock()
         from modules.crack import run
@@ -82,8 +79,7 @@ class TestCrackHashModes:
 class TestBruteForceServices:
     """Tests for brute force service methods."""
 
-    def test_brute_ssh_generates_hydra_command(self, mock_prompt, mock_wordlist,
-                                                mock_run_command):
+    def test_brute_ssh_generates_hydra_command(self, mock_prompt, mock_wordlist, mock_run_command):
         """brute_ssh should generate a hydra SSH command."""
         mock_logger = MagicMock()
         from modules.crack import run
@@ -93,8 +89,7 @@ class TestBruteForceServices:
         assert "hydra" in cmd
         assert "ssh://" in cmd
 
-    def test_brute_http_generates_hydra_command(self, mock_prompt, mock_wordlist,
-                                                 mock_run_command):
+    def test_brute_http_generates_hydra_command(self, mock_prompt, mock_wordlist, mock_run_command):
         """brute_http should include the target path."""
         mock_logger = MagicMock()
         from modules.crack import run
@@ -102,8 +97,7 @@ class TestBruteForceServices:
         cmd = mock_run_command.call_args[0][0]
         assert "http-get://" in cmd
 
-    def test_brute_router_includes_form_post(self, mock_prompt, mock_wordlist,
-                                              mock_run_command):
+    def test_brute_router_includes_form_post(self, mock_prompt, mock_wordlist, mock_run_command):
         """Router brute force should use http-form-post."""
         mock_logger = MagicMock()
         from modules.crack import run
@@ -112,8 +106,7 @@ class TestBruteForceServices:
         assert "http-form-post://" in cmd
         assert "login.cgi" in cmd
 
-    def test_all_modes_log_output(self, mock_prompt, mock_wordlist,
-                                    mock_run_command):
+    def test_all_modes_log_output(self, mock_prompt, mock_wordlist, mock_run_command):
         """All brute force modes should call logger.save_report."""
         mock_logger = MagicMock()
         from modules.crack import run

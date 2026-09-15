@@ -35,6 +35,9 @@ htmlcov/
 coverage.xml
 *.cover
 
+# Type checking
+.mypy_cache/
+
 # IDE
 .idea/
 .vscode/
@@ -46,6 +49,7 @@ coverage.xml
 # NetReaper runtime files
 reports/
 logs/
+data/
 *.pcap
 *.cap
 

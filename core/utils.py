@@ -15,6 +15,7 @@ from core.platform import (
     os_label,
     is_admin,
 )
+from core.config import get_config
 
 console = Console()
 
@@ -37,11 +38,15 @@ def sanitize_for_shell(value: str) -> str:
 
 
 def run_command(cmd: str, logger=None, module: str = "", target: str = "",
-                timeout: int = 300) -> str:
+                timeout: int = None) -> str:
     """
     Run a shell command with real-time output streaming.
-    Returns the full output as a string.
+    Returns the full output as a string. When timeout is None the configured
+    default command timeout is used.
     """
+    if timeout is None:
+        timeout = get_config().get_timeout("command")
+
     if get_learning_mode():
         from core.explanations import explain_command
         explain_command(cmd, console)
@@ -105,16 +110,32 @@ def select_interface() -> str:
     if not interfaces:
         console.print("[red] No interface found.[/]")
         return ""
+    configured = get_config().get("interface")
+    default = configured if configured in interfaces else None
     return questionary.select(
         "Select network interface:",
-        choices=interfaces
+        choices=interfaces,
+        default=default,
     ).ask()
 
 
 def select_wordlist() -> str:
-    """Prompt user to select or enter a wordlist path."""
+    """
+    Prompt user to select or enter a wordlist path.
+
+    When a wordlist is configured and exists it is returned directly, so
+    non-interactive and watch-mode runs never block on a prompt.
+    """
     import questionary
+
+    configured_file = get_config().get("wordlist")
+    if configured_file and Path(configured_file).is_file():
+        return str(configured_file)
+
     base_dir = Path(__file__).parent.parent / "wordlists"
+    configured_dir = get_config().get("wordlist_dir")
+    if configured_dir:
+        base_dir = Path(configured_dir)
     built_in = [str(f) for f in base_dir.glob("*.txt")] if base_dir.exists() else []
 
     choices = built_in + ["Enter custom path"]

@@ -11,6 +11,8 @@ import urllib.parse
 import subprocess
 from rich.console import Console
 
+from core.config import get_config
+
 console = Console()
 
 NVD_API = "https://services.nvd.nist.gov/rest/json/cves/2.0"
@@ -42,16 +44,22 @@ def search_cve(query: str, results: int = 5) -> list:
     url = f"{NVD_API}?keywordSearch={safe_query}&resultsPerPage={results}"
     cves = []
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "NetReaper/1.0.0"})
+        headers = {"User-Agent": "NetReaper/1.0.0"}
+        api_key = get_config().get("nvd_api_key")
+        if api_key:
+            headers["apiKey"] = api_key
+        req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req, timeout=10) as response:
             data = json.loads(response.read().decode("utf-8"))
             for item in data.get("vulnerabilities", [])[:results]:
                 cve = item.get("cve", {})
+                metrics = cve.get("metrics", {}).get("cvssMetricV31", [])
+                cvss = metrics[0].get("cvssData", {}) if metrics else {}
                 cves.append({
                     "id": cve.get("id", "N/A"),
                     "description": cve.get("descriptions", [{}])[0].get("value", "No description"),
-                    "score": cve.get("metrics", {}).get("cvssMetricV31", [{}])[0].get("cvssData", {}).get("baseScore", "N/A"),
-                    "severity": cve.get("metrics", {}).get("cvssMetricV31", [{}])[0].get("cvssData", {}).get("baseSeverity", "N/A"),
+                    "score": cvss.get("baseScore", "N/A"),
+                    "severity": cvss.get("baseSeverity", "N/A"),
                 })
     except urllib.error.URLError as e:
         console.print(f"[yellow] Could not contact NVD API (offline?): {e}[/]")
@@ -104,7 +112,10 @@ def run(action: str, target: str, logger) -> None:
             if cves:
                 report_lines.append(f"{svc['service']} {svc['version']} ({svc['port']}):")
                 for cve in cves:
-                    line = f"  - {cve['id']} | Score: {cve['score']} ({cve['severity']}) | {cve['description'][:120]}"
+                    line = (
+                        f"  - {cve['id']} | Score: {cve['score']} "
+                        f"({cve['severity']}) | {cve['description'][:120]}"
+                    )
                     console.print(line)
                     report_lines.append(line)
             else:

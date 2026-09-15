@@ -5,7 +5,6 @@ Covers: get_os, is_windows, is_linux, is_macos, get_package_managers,
 Author: 09azo14 | License: MIT
 """
 
-import pytest
 from unittest.mock import patch, MagicMock
 import sys
 from pathlib import Path
@@ -127,7 +126,7 @@ class TestUtilityFunctions:
     """Tests for IP, gateway, and temp dir utilities."""
 
     def test_ensure_temp_dir_creates_directory(self, tmp_path, monkeypatch):
-        from core.platform import ensure_temp_dir, get_temp_dir
+        from core.platform import ensure_temp_dir
         monkeypatch.setattr("core.platform.get_temp_dir", lambda: tmp_path / "netreaper")
         d = ensure_temp_dir()
         assert d.exists()

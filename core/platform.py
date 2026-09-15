@@ -273,7 +273,10 @@ def command_for(command_key: str) -> str:
     os_type = get_os()
     commands = {
         "ping": "ping" if os_type == OS_WINDOWS else "ping -c 4",
-        "interfaces": "ip link show" if os_type in (OS_LINUX, OS_MACOS) else "netsh interface show interface",
+        "interfaces": (
+            "ip link show" if os_type in (OS_LINUX, OS_MACOS)
+            else "netsh interface show interface"
+        ),
     }
     return commands.get(command_key, "")
 

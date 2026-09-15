@@ -43,7 +43,10 @@ def brute_services(logger, mode: str) -> None:
         path = sanitize_for_shell(Prompt.ask("[cyan]Path (e.g. /login)[/]", default="/"))
         cmd = f"hydra -l {user} -P {wordlist} http-get://{target}{path}"
     elif mode == "brute_router":
-        cmd = f"hydra -l {user} -P {wordlist} http-form-post://{target}/login.cgi:'user=^USER^&pass=^PASS^':F=incorrect"
+        cmd = (
+            f"hydra -l {user} -P {wordlist} http-form-post://{target}/login.cgi:"
+            "'user=^USER^&pass=^PASS^':F=incorrect"
+        )
     elif mode == "brute_ssh":
         cmd = f"hydra -l {user} -P {wordlist} ssh://{target}"
     elif mode == "brute_ftp":

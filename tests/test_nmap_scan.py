@@ -5,7 +5,7 @@ Author: 09azo14 | License: MIT
 """
 
 import pytest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock
 import sys
 from pathlib import Path
 
@@ -59,7 +59,7 @@ class TestNmapRun:
     def test_run_unknown_type_does_not_crash(self):
         """Unknown scan type should not crash."""
         mock_logger = MagicMock()
-        with patch("modules.nmap_scan.run_command") as mock_run:
+        with patch("modules.nmap_scan.run_command"):
             from modules.nmap_scan import run
             try:
                 run("nonexistent_type", "192.168.1.1", mock_logger)

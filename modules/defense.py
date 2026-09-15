@@ -23,7 +23,10 @@ def run(action: str, logger) -> None:
                 return
             safe_ip = ip.replace("'", "''")
             rule_name = f"NetReaper_Block_{safe_ip.replace('.', '_')}"
-            cmd = f"netsh advfirewall firewall add rule name={rule_name} dir=in action=block remoteip='{safe_ip}'"
+            cmd = (
+                f"netsh advfirewall firewall add rule name={rule_name} "
+                f"dir=in action=block remoteip='{safe_ip}'"
+            )
         elif action == "connections":
             cmd = "netstat -an"
         elif action == "arp_table":

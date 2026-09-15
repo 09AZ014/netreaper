@@ -9,7 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.parser import extract_ports, extract_services, extract_os
+from core.parser import extract_ports, extract_services, extract_os  # noqa: E402
 
 
 class TestParser(unittest.TestCase):
