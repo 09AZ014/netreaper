@@ -42,14 +42,17 @@ def search_cve(query: str, results: int = 5) -> list:
     """Search CVEs via NIST NVD API for a given query."""
     safe_query = urllib.parse.quote(query, safe="")
     url = f"{NVD_API}?keywordSearch={safe_query}&resultsPerPage={results}"
-    cves = []
+    cves: list = []
+    if not url.startswith(("http://", "https://")):
+        console.print("[red] Refusing to open a non-HTTP CVE endpoint.[/]")
+        return cves
     try:
         headers = {"User-Agent": "NetReaper/1.0.0"}
         api_key = get_config().get("nvd_api_key")
         if api_key:
             headers["apiKey"] = api_key
         req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=10) as response:
+        with urllib.request.urlopen(req, timeout=10) as response:  # nosec B310
             data = json.loads(response.read().decode("utf-8"))
             for item in data.get("vulnerabilities", [])[:results]:
                 cve = item.get("cve", {})

@@ -193,6 +193,9 @@ def send_webhook(url: str, payload: dict, timeout: int = 10) -> bool:
     """POST a JSON alert to a webhook URL. Returns True on a 2xx response."""
     if not url:
         return False
+    if not url.startswith(("http://", "https://")):
+        console.print(f"[yellow] Refusing non-HTTP webhook URL: {url}[/]")
+        return False
     data = json.dumps(payload).encode("utf-8")
     request = urllib.request.Request(
         url,
@@ -204,7 +207,7 @@ def send_webhook(url: str, payload: dict, timeout: int = 10) -> bool:
         method="POST",
     )
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with urllib.request.urlopen(request, timeout=timeout) as response:  # nosec B310
             return 200 <= getattr(response, "status", 0) < 300
     except Exception as e:
         console.print(f"[yellow] Webhook delivery failed: {e}[/]")

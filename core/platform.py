@@ -140,7 +140,8 @@ def get_default_gateway() -> str:
             for line in result.stdout.splitlines():
                 parts = line.split()
                 # Look for a 0.0.0.0/0 route, gateway is usually the third column
-                if len(parts) >= 3 and parts[0] == "0.0.0.0":
+                # parts[0] is the destination network printed by netsh, not a bind address.
+                if len(parts) >= 3 and parts[0] == "0.0.0.0":  # nosec B104
                     return parts[2].strip()
         else:
             result = subprocess.run(

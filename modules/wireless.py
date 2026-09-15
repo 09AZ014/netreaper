@@ -8,7 +8,7 @@ import os
 from rich.console import Console
 from rich.prompt import Prompt
 from core.utils import run_command, select_interface, sanitize_for_shell
-from core.platform import supported_modules, os_label
+from core.platform import supported_modules, os_label, get_temp_dir
 
 console = Console()
 
@@ -34,8 +34,9 @@ def run(action: str, logger) -> None:
         bssid = sanitize_for_shell(
             Prompt.ask("[cyan]BSSID[/]", default="00:11:22:33:44:55")
         )
+        default_prefix = str(get_temp_dir() / "netreaper_handshake")
         output = sanitize_for_shell(
-            Prompt.ask("[cyan]File prefix[/]", default="/tmp/netreaper_handshake")
+            Prompt.ask("[cyan]File prefix[/]", default=default_prefix)
         )
         cmd = f"sudo airodump-ng -c {channel} --bssid {bssid} -w {output} {safe_iface}mon"
     elif action == "deauth":

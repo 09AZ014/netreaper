@@ -59,8 +59,12 @@ def run_command(cmd: str, logger=None, module: str = "", target: str = "",
     output_lines = []
 
     try:
+        # The command string is assembled internally: tool names are constants and
+        # every user-supplied value passes through sanitize_for_shell(). Several
+        # modules require shell pipelines (see modules/defense.py), so shell=True
+        # is intentional and cannot simply be disabled.
         proc = subprocess.Popen(
-            cmd, shell=True,
+            cmd, shell=True,  # nosec B602
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True, bufsize=1,

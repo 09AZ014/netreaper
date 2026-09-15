@@ -18,7 +18,9 @@ def run(action: str, logger) -> None:
         if action == "fw_status":
             cmd = "netsh advfirewall show currentprofile"
         elif action == "block_ip":
-            ip = sanitize_for_shell(Prompt.ask("[cyan]IP to block[/]", default="0.0.0.0"))
+            # Placeholder shown to the operator, not a bind address.
+            default_ip = "0.0.0.0"  # nosec B104
+            ip = sanitize_for_shell(Prompt.ask("[cyan]IP to block[/]", default=default_ip))
             if not confirm_action(f"block IP {ip}"):
                 return
             safe_ip = ip.replace("'", "''")
@@ -47,7 +49,9 @@ def run(action: str, logger) -> None:
         if action == "fw_status":
             cmd = "iptables -L -n -v"
         elif action == "block_ip":
-            ip = sanitize_for_shell(Prompt.ask("[cyan]IP to block[/]", default="0.0.0.0"))
+            # Placeholder shown to the operator, not a bind address.
+            default_ip = "0.0.0.0"  # nosec B104
+            ip = sanitize_for_shell(Prompt.ask("[cyan]IP to block[/]", default=default_ip))
             if not confirm_action(f"block IP {ip}"):
                 return
             cmd = f"sudo iptables -A INPUT -s {ip} -j DROP"
