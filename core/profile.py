@@ -50,12 +50,16 @@ class TargetProfile:
         profile = self.data["targets"][target]
         for k, v in kwargs.items():
             if k == "ports" and isinstance(v, list):
-                existing = set(profile.get("ports", []))
-                existing.update(v)
-                profile["ports"] = sorted(existing, key=lambda x: int(str(x).rsplit("/", 1)[-1]))
+                existing_ports: set = set(profile.get("ports", []))
+                existing_ports.update(v)
+                profile["ports"] = sorted(
+                    existing_ports, key=lambda x: int(str(x).rsplit("/", 1)[-1])
+                )
             elif k == "services" and isinstance(v, list):
-                existing = profile.get("services", [])
-                profile["services"] = existing + [s for s in v if s not in existing]
+                existing_services: list = profile.get("services", [])
+                profile["services"] = existing_services + [
+                    s for s in v if s not in existing_services
+                ]
             elif v is not None:
                 profile[k] = v
         profile["last_seen"] = datetime.datetime.now().isoformat()
